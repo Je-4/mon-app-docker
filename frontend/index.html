@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Laissez nous un message - Docker</title>
+    <style>
+        body { font-family: Arial; max-width: 700px; margin: auto; padding: 30px; background: #f0f4f8; }
+        h1 { color: #2d3748; text-align: center; }
+        p { text-align: center; color: #718096; }
+        input, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #cbd5e0; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
+        button { width: 100%; padding: 12px; background: #4299e1; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 5px; }
+        button:hover { background: #3182ce; }
+        .message { background: white; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #4299e1; }
+        .message b { color: #2d3748; }
+        .message small { color: #a0aec0; }
+        #status { text-align: center; color: green; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Laissez nous un message</h1>
+    <p>Expose Cloud Computing - Docker</p>
+    <input id="nom" placeholder="Votre nom" />
+    <textarea id="message" rows="3" placeholder="Votre message..."></textarea>
+    <button onclick="envoyer()">Envoyer</button>
+    <div id="status"></div>
+    <h2>Messages</h2>
+    <div id="messages"></div>
+    <script>
+        const API = 'http://localhost:5000';
+
+        async function charger() {
+            const res = await fetch(API + '/messages');
+            const data = await res.json();
+            const div = document.getElementById('messages');
+            div.innerHTML = data.length === 0 ? '<p>Aucun message pour le moment.</p>' : '';
+            data.forEach(m => {
+                div.innerHTML += '<div class="message"><b>' + m.nom + '</b> <small>' + m.date.substring(0,16) + '</small><br>' + m.message + '</div>';
+            });
+        }
+
+        async function envoyer() {
+            const nom = document.getElementById('nom').value.trim();
+            const message = document.getElementById('message').value.trim();
+            if (!nom || !message) { alert('Remplissez tous les champs !'); return; }
+            await fetch(API + '/messages', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({nom, message})
+            });
+            document.getElementById('nom').value = '';
+            document.getElementById('message').value = '';
+            document.getElementById('status').innerText = 'Message envoye !';
+            setTimeout(() => document.getElementById('status').innerText = '', 2000);
+            charger();
+        }
+
+        charger();
+    </script>
+</body>
+</html>
